@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Claude Skills — Master Any Skill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --o1:#E8611A; --o2:#F07D2E; --o3:#FF9A50; --amber:#FFB347;
+  --dark:#060401; --d2:#0F0904; --d3:#181005;
+  --text:#F4EBD8; --muted:#9A7F60; --border:rgba(232,97,26,.13);
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--dark);
+  color:var(--text);
+  font-family:'Sora',sans-serif;
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* ── CURSOR ── */
+#cur,#curR {
+  position:fixed; top:0; left:0; z-index:9999;
+  border-radius:50%; pointer-events:none;
+  transform:translate(-200px,-200px);
+}
+#cur  { width:10px; height:10px; background:var(--o1); z-index:9999; transition:width .22s,height .22s; }
+#curR { width:34px; height:34px; border:1.5px solid var(--o3); opacity:.5; z-index:9998; transition:width .28s,height .28s; }
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1.1rem 4rem;
+  background:rgba(6,4,1,.72);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  border-bottom:1px solid var(--border);
+}
+.logo {
+  font-family:'Lora',serif; font-size:1.3rem; font-weight:700;
+  background:linear-gradient(90deg,var(--o1),var(--amber));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.nav-links { display:flex; align-items:center; gap:2rem; }
+.nav-links a {
+  text-decoration:none; color:var(--muted);
+  font-size:.76rem; font-weight:600; letter-spacing:.07em; text-transform:uppercase;
+  transition:color .22s;
+}
+.nav-links a:hover { color:var(--o3); }
+.nav-btn {
+  padding:.44rem 1.15rem; border:1.5px solid var(--o1); border-radius:999px;
+  color:var(--o1) !important;
+  transition:background .22s !important;
+}
+.nav-btn:hover { background:var(--o1) !important; color:#fff !important; -webkit-text-fill-color:#fff !important; }
+
+/* ── HERO ── */
+#hero {
+  position:relative; height:100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; overflow:hidden;
+}
+
+/* Background canvas fills the hero */
+#bgCanvas {
+  position:absolute; inset:0; width:100%; height:100%;
+}
+
+.hero-inner {
+  position:relative; z-index:2;
+  padding:0 3rem; max-width:1000px;
+}
+.eyebrow {
+  display:inline-block; font-size:.68rem; letter-spacing:.35em; text-transform:uppercase;
+  color:var(--o1); margin-bottom:1.4rem;
+  opacity:0; animation:fadeUp .8s .3s forwards;
+}
+#hero h1 {
+  font-family:'Lora',serif;
+  font-size:clamp(2.8rem,7vw,7rem);
+  font-weight:700; line-height:1.06; letter-spacing:-.025em;
+  margin-bottom:1.5rem;
+  opacity:0; animation:fadeUp .9s .5s forwards;
+}
+#hero h1 em {
+  font-style:italic;
+  background:linear-gradient(120deg,var(--o1) 0%,var(--amber) 55%,var(--o3) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-sub {
+  font-size:1rem; font-weight:300; color:var(--muted);
+  max-width:500px; line-height:1.78; margin:0 auto 2.4rem;
+  opacity:0; animation:fadeUp 1s .7s forwards;
+}
+.hero-btns {
+  display:flex; gap:.85rem; justify-content:center; flex-wrap:wrap;
+  opacity:0; animation:fadeUp 1s .9s forwards;
+}
+.btn-fill {
+  display:inline-block; padding:.76rem 1.85rem;
+  background:linear-gradient(135deg,var(--o1),var(--o2));
+  border-radius:999px; color:#fff !important; -webkit-text-fill-color:#fff !important;
+  text-decoration:none; font-size:.86rem; font-weight:600;
+  box-shadow:0 8px 32px rgba(232,97,26,.35);
+  transition:transform .28s,box-shadow .28s;
+}
+.btn-fill:hover { transform:translateY(-3px); box-shadow:0 14px 44px rgba(232,97,26,.5); }
+.btn-ghost {
+  display:inline-block; padding:.76rem 1.85rem;
+  border:1.5px solid rgba(232,97,26,.35); border-radius:999px;
+  color:var(--text) !important; -webkit-text-fill-color:var(--text) !important;
+  text-decoration:none; font-size:.86rem; font-weight:500;
+  transition:border-color .28s,background .28s;
+}
+.btn-ghost:hover { border-color:var(--o1); background:rgba(232,97,26,.07); }
+
+.scroll-cue {
+  position:absolute; bottom:2rem; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:.4rem;
+  color:var(--muted); font-size:.6rem; letter-spacing:.25em; text-transform:uppercase;
+  opacity:0; animation:fadeUp 1s 1.4s forwards;
+}
+.scroll-bar {
+  width:1px; height:40px;
+  background:linear-gradient(var(--o1),transparent);
+  animation:scrollpulse 2s ease-in-out infinite;
+}
+@keyframes scrollpulse { 50% { opacity:.28; transform:scaleY(.55); } }
+
+/* ── SCROLL SHOWCASE ── */
+#showcase { position:relative; height:480vh; }
+.showcase-sticky {
+  position:sticky; top:0; height:100vh;
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+#morphCanvas { position:absolute; inset:0; width:100%; height:100%; }
+.showcase-text {
+  position:relative; z-index:3; text-align:center; pointer-events:none;
+  padding:0 2.5rem; max-width:700px;
+}
+.sc-label {
+  font-size:.66rem; letter-spacing:.3em; text-transform:uppercase; color:var(--o1);
+  margin-bottom:.9rem; transition:opacity .35s;
+}
+.sc-title {
+  font-family:'Lora',serif;
+  font-size:clamp(1.9rem,4.2vw,3.8rem);
+  font-weight:700; line-height:1.18;
+  transition:opacity .35s,transform .35s;
+}
+.sc-title em { font-style:italic; color:var(--o3); }
+
+/* ── STATS ── */
+#stats {
+  display:flex; justify-content:center; gap:4rem; flex-wrap:wrap;
+  padding:4.5rem 4rem;
+  background:var(--d2);
+  border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+}
+.stat { text-align:center; }
+.stat-n {
+  font-family:'Lora',serif; font-size:2.9rem; font-weight:700;
+  background:linear-gradient(120deg,var(--o1),var(--amber));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.stat-l { font-size:.68rem; color:var(--muted); letter-spacing:.14em; text-transform:uppercase; margin-top:.38rem; }
+
+/* ── SHARED SECTION ── */
+.sec { padding:7rem 5rem; max-width:1200px; margin:0 auto; }
+.sec-eye { font-size:.66rem; letter-spacing:.3em; text-transform:uppercase; color:var(--o1); margin-bottom:.85rem; text-align:center; }
+.sec-title {
+  font-family:'Lora',serif;
+  font-size:clamp(1.75rem,3.6vw,3rem);
+  font-weight:700; line-height:1.14; text-align:center; margin-bottom:.85rem;
+}
+.sec-sub { text-align:center; color:var(--muted); font-size:.9rem; line-height:1.75; max-width:560px; margin:0 auto 3.4rem; }
+.hl-grad {
+  background:linear-gradient(120deg,var(--o1),var(--amber));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+/* ── SKILL CARDS ── */
+.skill-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:1.3rem;
+}
+@media(max-width:880px) { .skill-grid { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:540px) { .skill-grid { grid-template-columns:1fr; } }
+
+.skill-card {
+  background:linear-gradient(145deg,rgba(24,16,5,.94),rgba(15,10,4,.97));
+  border:1px solid var(--border); border-radius:18px; padding:2rem;
+  position:relative; overflow:hidden;
+  transition:transform .38s cubic-bezier(.23,1,.32,1),border-color .38s,box-shadow .38s;
+}
+.skill-card::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(232,97,26,.1) 0%,transparent 62%);
+  opacity:0; transition:opacity .32s;
+}
+.skill-card:hover { transform:translateY(-6px); border-color:rgba(232,97,26,.28); box-shadow:0 20px 55px rgba(232,97,26,.1); }
+.skill-card:hover::before { opacity:1; }
+
+.skill-num {
+  font-family:'Lora',serif; font-size:2.5rem; font-weight:700; line-height:1;
+  color:rgba(232,97,26,.18); margin-bottom:.35rem;
+}
+.skill-icon {
+  width:42px; height:42px; border-radius:11px; margin-bottom:1rem;
+  background:linear-gradient(135deg,var(--o1),var(--amber));
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.2rem; box-shadow:0 5px 18px rgba(232,97,26,.24);
+}
+.skill-card h3 { font-size:1rem; font-weight:700; margin-bottom:.45rem; }
+.skill-card p  { color:var(--muted); font-size:.82rem; line-height:1.65; }
+.skill-tag-row { display:flex; flex-wrap:wrap; gap:.38rem; margin-top:.95rem; }
+.skill-tag {
+  padding:.24rem .72rem; border:1px solid rgba(232,97,26,.24); border-radius:999px;
+  font-size:.66rem; color:var(--o3); letter-spacing:.04em;
+}
+
+/* ── APPLY STEPS ── */
+#apply { background:var(--d2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.apply-wrap { max-width:840px; margin:0 auto; padding:7rem 5rem; }
+.apply-steps { display:flex; flex-direction:column; gap:2.2rem; margin-top:2.8rem; }
+.astep {
+  display:grid; grid-template-columns:54px 1fr; gap:1.4rem; align-items:start;
+  opacity:0; transform:translateX(-24px);
+  transition:opacity .52s cubic-bezier(.23,1,.32,1),transform .52s cubic-bezier(.23,1,.32,1);
+}
+.astep.visible { opacity:1; transform:none; }
+.astep-num {
+  width:54px; height:54px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,var(--o1),var(--amber));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Lora',serif; font-weight:700; font-size:1.05rem;
+  box-shadow:0 5px 20px rgba(232,97,26,.28);
+}
+.astep-body h4 { font-size:.97rem; font-weight:700; margin-bottom:.36rem; }
+.astep-body p  { color:var(--muted); font-size:.84rem; line-height:1.65; }
+
+/* ── SPOTLIGHT ── */
+.spotlight-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.4rem; }
+@media(max-width:720px) { .spotlight-grid { grid-template-columns:1fr; } }
+
+.spotlight {
+  border-radius:20px; padding:2.4rem; position:relative; overflow:hidden;
+  border:1px solid var(--border);
+  background:linear-gradient(145deg,rgba(24,16,5,.92),rgba(9,6,2,.97));
+  transition:transform .38s cubic-bezier(.23,1,.32,1),border-color .38s;
+}
+.spotlight:hover { transform:translateY(-5px); border-color:rgba(232,97,26,.26); }
+.spotlight-wide { grid-column:span 2; }
+@media(max-width:720px) { .spotlight-wide { grid-column:span 1; } }
+
+.sp-glow {
+  position:absolute; top:-50px; right:-50px; width:180px; height:180px;
+  border-radius:50%; filter:blur(60px); pointer-events:none;
+  background:rgba(232,97,26,.1);
+}
+.sp-emoji { font-size:2rem; margin-bottom:.85rem; display:block; }
+.spotlight h3 { font-family:'Lora',serif; font-size:1.35rem; font-weight:700; margin-bottom:.6rem; }
+.spotlight > p { color:var(--muted); font-size:.84rem; line-height:1.7; }
+.sp-steps { margin-top:1.2rem; display:flex; flex-direction:column; gap:.52rem; }
+.sp-step { display:flex; align-items:flex-start; gap:.7rem; font-size:.82rem; line-height:1.5; }
+.sp-dot { flex-shrink:0; margin-top:.38rem; width:6px; height:6px; border-radius:50%; background:var(--o1); box-shadow:0 0 5px rgba(232,97,26,.45); }
+
+/* ── MANIFESTO ── */
+#manifesto { padding:8rem 5rem; text-align:center; max-width:820px; margin:0 auto; }
+.mf-text { font-family:'Lora',serif; font-size:clamp(1.5rem,3vw,2.5rem); font-weight:400; line-height:1.5; color:var(--muted); }
+.mf-text .w { display:inline-block; transition:color .32s,opacity .32s; opacity:.2; }
+.mf-text .w.lit { color:var(--text); opacity:1; }
+.mf-text .acc { color:var(--o1) !important; }
+
+/* ── CTA ── */
+#cta {
+  margin:3rem 4rem 4rem; border-radius:24px; padding:5.5rem 4rem; text-align:center;
+  background:linear-gradient(135deg,rgba(232,97,26,.14) 0%,rgba(255,179,71,.05) 100%);
+  border:1px solid rgba(232,97,26,.18); position:relative; overflow:hidden;
+}
+.cta-orb {
+  position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none;
+}
+.cta-orb1 { width:500px; height:250px; top:-40%; left:50%; transform:translateX(-50%); background:rgba(232,97,26,.15); }
+.cta-orb2 { width:200px; height:200px; bottom:-30px; right:5%; background:rgba(255,179,71,.1); }
+#cta h2 {
+  font-family:'Lora',serif;
+  font-size:clamp(1.8rem,4.2vw,3.2rem);
+  font-weight:700; line-height:1.12; margin-bottom:.85rem;
+  position:relative; z-index:1;
+}
+#cta p { color:var(--muted); font-size:.96rem; margin-bottom:2.2rem; position:relative; z-index:1; }
+#cta .btn-fill { position:relative; z-index:1; }
+
+/* ── FOOTER ── */
+footer {
+  padding:2.2rem 4rem; border-top:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
+  color:var(--muted); font-size:.74rem;
+}
+.foot-links { display:flex; gap:1.6rem; }
+.foot-links a { color:var(--muted); text-decoration:none; transition:color .22s; }
+.foot-links a:hover { color:var(--o1); }
+
+/* ── REVEAL UTILITY ── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
+.reveal { opacity:0; transform:translateY(32px); transition:opacity .6s cubic-bezier(.23,1,.32,1),transform .6s cubic-bezier(.23,1,.32,1); }
+.reveal.visible { opacity:1; transform:none; }
+.d1{transition-delay:.08s} .d2{transition-delay:.16s} .d3{transition-delay:.24s}
+.d4{transition-delay:.32s} .d5{transition-delay:.4s}
+
+/* ── NOISE OVERLAY ── */
+body::after {
+  content:''; position:fixed; inset:0; z-index:10000; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");
+  background-size:160px; opacity:.4;
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="curR"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Claude Skills.</div>
+  <div class="nav-links">
+    <a href="#skills">Skills</a>
+    <a href="#apply">How to Apply</a>
+    <a href="#spotlight">Deep Dive</a>
+    <a href="#cta" class="nav-btn">Start Learning</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="bgCanvas"></canvas>
+  <div class="hero-inner">
+    <span class="eyebrow">Claude · Skills Platform · 2025</span>
+    <h1>Master Any Skill <em>Faster.</em></h1>
+    <p class="hero-sub">Claude helps you learn, practice, and apply the world's most valuable skills — from coding and communication to creativity and leadership.</p>
+    <div class="hero-btns">
+      <a href="#skills" class="btn-fill">Explore All Skills</a>
+      <a href="#apply" class="btn-ghost">How It Works</a>
+    </div>
+  </div>
+  <div class="scroll-cue"><span>Scroll</span><div class="scroll-bar"></div></div>
+</section>
+
+<!-- SCROLL SHOWCASE -->
+<section id="showcase">
+  <div class="showcase-sticky">
+    <canvas id="morphCanvas"></canvas>
+    <div class="showcase-text">
+      <p class="sc-label" id="scLabel">Skill 01 — Communication</p>
+      <h2 class="sc-title" id="scTitle">Speak with <em>clarity and confidence</em></h2>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="stat reveal"><div class="stat-n" data-target="500" data-sfx="+">0</div><div class="stat-l">Skills Covered</div></div>
+  <div class="stat reveal d1"><div class="stat-n" data-target="12" data-sfx="">0</div><div class="stat-l">Skill Categories</div></div>
+  <div class="stat reveal d2"><div class="stat-n" data-target="94" data-sfx="%">0</div><div class="stat-l">Learner Satisfaction</div></div>
+  <div class="stat reveal d3"><div class="stat-n" data-target="3" data-sfx=" min">0</div><div class="stat-l">To First Insight</div></div>
+</section>
+
+<!-- TOP SKILLS -->
+<section id="skills">
+  <div class="sec">
+    <p class="sec-eye reveal">The Most In-Demand Skills</p>
+    <h2 class="sec-title reveal">Six skills that <span class="hl-grad">change everything</span></h2>
+    <p class="sec-sub reveal">The highest-impact skills our learners build with Claude — practical, modern, and immediately applicable to real life and real work.</p>
+    <div class="skill-grid">
+
+      <div class="skill-card reveal d1">
+        <div class="skill-num">01</div>
+        <div class="skill-icon">💬</div>
+        <h3>Communication</h3>
+        <p>The cornerstone of every career. Learn to write persuasively, speak with authority, craft compelling emails, and tailor your message for any audience — Claude coaches you in real time with instant feedback on tone, clarity, and impact.</p>
+        <div class="skill-tag-row">
+          <span class="skill-tag">Writing</span>
+          <span class="skill-tag">Speaking</span>
+          <span class="skill-tag">Negotiation</span>
+        </div>
+      </div>
+
+      <div class="skill-card reveal d2">
+        <div class="skill-num">02</div>
+        <div class="skill-icon">💻</div>
+        <h3>Coding & Engineering</h3>
+        <p>From Python to React, SQL to system design — Claude explains every concept, debugs your code, writes boilerplate, and walks you through architecture decisions the way a senior engineer mentors a junior developer on a real project.</p>
+        <div class="skill-tag-row">
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">JavaScript</span>
+          <span class="skill-tag">System Design</span>
+        </div>
+      </div>
+
+      <div class="skill-card reveal d3">
+        <div class="skill-num">03</div>
+        <div class="skill-icon">🧩</div>
+        <h3>Critical Thinking</h3>
+        <p>The most transferable skill you can own. Claude challenges your assumptions, helps you spot logical fallacies, and trains structured analytical thinking you can apply to every domain — business, science, or everyday life decisions.</p>
+        <div class="skill-tag-row">
+          <span class="skill-tag">Logic</span>
+          <span class="skill-tag">Analysis</span>
+          <span class="skill-tag">Decision Making</span>
+        </div>
+      </div>
+
+      <div class="skill-card reveal d1">
+        <div class="skill-num">04</div>
+        <div class="skill-icon">🎨</div>
+        <h3>Creative Skills</h3>
+        <p>Creativity is a practice, not a talent. Claude is your brainstorming partner, editor, and creative director — helping you write better stories, develop sharper ideas, and produce work that genuinely stands out in any field.</p>
+        <div class="skill-tag-row">
+          <span class="skill-tag">Copywriting</span>
+          <span class="skill-tag">Storytelling</span>
+          <span class="skill-tag">Ideation</span>
+        </div>
+      </div>
+
+      <div class="skill-card reveal d2">
+        <div class="skill-num">05</div>
+        <div class="skill-icon">📊</div>
+        <h3>Data & Analysis</h3>
+        <p>Data is the language of modern business. Claude helps you understand statistics, extract insights from spreadsheets, build dashboards, and present findings that actually influence decisions in boardrooms and beyond.</p>
+        <div class="skill-tag-row">
+          <span class="skill-tag">Statistics</span>
+          <span class="skill-tag">Excel / SQL</span>
+          <span class="skill-tag">Visualization</span>
+        </div>
+      </div>
+
+      <div class="skill-card reveal d3">
+        <div class="skill-num">06</div>
+        <div class="skill-icon">🚀</div>
+        <h3>Leadership & Strategy</h3>
+        <p>Great leaders think clearly under pressure. Claude helps you develop strategic frameworks, navigate team dynamics, craft vision narratives, and make sharper, faster decisions when it matters most — in business and in life.</p>
+        <div class="skill-tag-row">
+          <span class="skill-tag">Strategy</span>
+          <span class="skill-tag">Team Building</span>
+          <span class="skill-tag">Vision</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- HOW TO APPLY -->
+<section id="apply">
+  <div class="apply-wrap">
+    <p class="sec-eye reveal">How to Apply Skills with Claude</p>
+    <h2 class="sec-title reveal" style="text-align:left;">From zero to <span class="hl-grad">applied in minutes</span></h2>
+    <p class="sec-sub reveal" style="text-align:left;margin-left:0;max-width:600px;">Claude doesn't just teach theory — it drops you straight into active practice. Here is the exact method our most successful learners follow every single day.</p>
+    <div class="apply-steps">
+      <div class="astep">
+        <div class="astep-num">1</div>
+        <div class="astep-body">
+          <h4>Name your skill and your current level</h4>
+          <p>Tell Claude exactly what you want to work on and where you stand. Example: "I want to improve my public speaking — fine with small groups, but I freeze in front of large audiences." The more specific you are, the more precisely Claude can tailor its coaching to close your exact gap.</p>
+        </div>
+      </div>
+      <div class="astep">
+        <div class="astep-num">2</div>
+        <div class="astep-body">
+          <h4>Ask Claude to teach you by doing, not just explaining</h4>
+          <p>Don't settle for explanations — demand exercises. Say: "Give me a real-world scenario to practice this skill right now." Claude will run simulated interviews, set writing challenges, create coding problems, or build debate prompts on the spot. Active practice beats passive reading every single time.</p>
+        </div>
+      </div>
+      <div class="astep">
+        <div class="astep-num">3</div>
+        <div class="astep-body">
+          <h4>Submit your work and get honest, detailed feedback</h4>
+          <p>Share your attempt — your email draft, your code, your argument — and ask Claude to critique it fully. Ask for a score out of 10, a numbered list of specific weaknesses, and three improvements you can make right now. Claude's feedback is direct and actionable, never vague or politely useless.</p>
+        </div>
+      </div>
+      <div class="astep">
+        <div class="astep-num">4</div>
+        <div class="astep-body">
+          <h4>Build a personalized 30-day learning path</h4>
+          <p>Ask Claude to design a structured plan tailored to your schedule and goals. It breaks the skill into sub-skills, prescribes daily exercises, recommends resources at exactly your level, and maps your progression from uncertain beginner to confident practitioner — available 24 hours a day.</p>
+        </div>
+      </div>
+      <div class="astep">
+        <div class="astep-num">5</div>
+        <div class="astep-body">
+          <h4>Apply the skill to real work immediately</h4>
+          <p>The fastest way to cement any skill is to use it on something real and consequential. Bring Claude your actual project — a work presentation, a side business idea, a difficult conversation — and apply your new skills in live context. Claude bridges the gap between learning and actually doing.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILL SPOTLIGHT -->
+<section id="spotlight">
+  <div class="sec">
+    <p class="sec-eye reveal">Deep Dive</p>
+    <h2 class="sec-title reveal">Skills under the <span class="hl-grad">spotlight</span></h2>
+    <p class="sec-sub reveal">A closer look at how Claude helps you master three of the most in-demand skills of the modern world — with specific techniques you can use starting today.</p>
+    <div class="spotlight-grid">
+
+      <div class="spotlight reveal d1">
+        <div class="sp-glow"></div>
+        <span class="sp-emoji">💻</span>
+        <h3>Coding with Claude</h3>
+        <p>Whether you are a complete beginner or a seasoned developer, Claude accelerates your coding in ways no static tutorial can match. It explains every line, catches your bugs, and teaches you to think like an engineer — not just copy and paste solutions blindly.</p>
+        <div class="sp-steps">
+          <div class="sp-step"><div class="sp-dot"></div><span>Paste broken code and ask "what's wrong here and why?" — learn the pattern, not just the fix</span></div>
+          <div class="sp-step"><div class="sp-dot"></div><span>Ask Claude to rebuild your messy code cleanly, then explain every single change it makes</span></div>
+          <div class="sp-step"><div class="sp-dot"></div><span>Request mini-projects at increasing difficulty levels, week by week, to build real fluency</span></div>
+          <div class="sp-step"><div class="sp-dot"></div><span>Whiteboard system design problems in plain English before writing a single line of code</span></div>
+        </div>
+      </div>
+
+      <div class="spotlight reveal d2">
+        <div class="sp-glow"></div>
+        <span class="sp-emoji">✍️</span>
+        <h3>Writing with Claude</h3>
+        <p>Great writing opens every door — jobs, clients, audiences, investors. Claude helps you find your voice, sharpen your arguments, and write with a clarity and confidence that most people spend decades trying to achieve entirely on their own.</p>
+        <div class="sp-steps">
+          <div class="sp-step"><div class="sp-dot"></div><span>Share any draft and ask for the single weakest sentence — then rewrite it yourself before seeing Claude's version</span></div>
+          <div class="sp-step"><div class="sp-dot"></div><span>Ask Claude to rewrite one paragraph three ways and explain the tradeoff in each version</span></div>
+          <div class="sp-step"><div class="sp-dot"></div><span>Practice persuasive writing: argue a position, then have Claude steelman the strongest counterargument</span></div>
+          <div class="sp-step"><div class="sp-dot"></div><span>Build a personal style guide by sharing writing you admire and asking Claude to extract the underlying patterns</span></div>
+        </div>
+      </div>
+
+      <div class="spotlight spotlight-wide reveal">
+        <div class="sp-glow"></div>
+        <span class="sp-emoji">🧠</span>
+        <h3>Critical Thinking — The Skill That Multiplies All Others</h3>
+        <p>Every other skill you develop becomes more powerful when combined with sharp, disciplined thinking. Critical thinking is the ability to evaluate arguments with rigor, identify hidden bias, reason under uncertainty, and make decisions that hold up under pressure and scrutiny. It is the foundation of great leadership, great engineering, great entrepreneurship, and great creative work alike. Claude is the ideal sparring partner — it never agrees just to be polite, it always challenges weak reasoning, and it helps you build mental frameworks that transfer across every challenge life brings.</p>
+        <div class="sp-steps" style="flex-direction:row;flex-wrap:wrap;gap:.9rem;margin-top:1.4rem;">
+          <div class="sp-step" style="flex:1;min-width:200px"><div class="sp-dot"></div><span>Ask Claude to "steelman then destroy" any argument you make — this trains you to see every angle at once</span></div>
+          <div class="sp-step" style="flex:1;min-width:200px"><div class="sp-dot"></div><span>Give Claude a real decision you are facing and ask for the second and third-order consequences</span></div>
+          <div class="sp-step" style="flex:1;min-width:200px"><div class="sp-dot"></div><span>Practice spotting logical fallacies: share articles and ask Claude to flag every weak claim and bias</span></div>
+          <div class="sp-step" style="flex:1;min-width:200px"><div class="sp-dot"></div><span>Use Socratic dialogue — keep asking "why?" until you hit the bedrock assumption beneath any belief</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section id="manifesto">
+  <p class="mf-text" id="mfText">
+    Skills are not things you <span class="acc">have.</span> They are things you <span class="acc">become.</span> Every expert alive was once a complete beginner who simply refused to stop. The difference was never talent — it was the quality of their <span class="acc">practice,</span> the honesty of their feedback, and the relentless consistency of their effort. Claude is here to make sure nothing stands between you and the person you are <span class="acc">becoming.</span>
+  </p>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-orb cta-orb1"></div>
+  <div class="cta-orb cta-orb2"></div>
+  <h2 class="reveal">Start building your skills <span style="color:var(--o1)">today.</span></h2>
+  <p class="reveal">No textbooks. No waiting. Just you, Claude, and the skill you have always wanted.</p>
+  <a href="https://claude.ai" class="btn-fill reveal">Open Claude Free →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">Claude Skills.</div>
+  <div class="foot-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">API</a>
+    <a href="#">Blog</a>
+    <a href="#">Careers</a>
+  </div>
+  <span>© 2025 Anthropic</span>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  /* ══════════════════════════════
+     CURSOR
+  ══════════════════════════════ */
+  var cur  = document.getElementById('cur');
+  var curR = document.getElementById('curR');
+  var mx=0, my=0, rx=0, ry=0;
+
+  document.addEventListener('mousemove', function(e) { mx=e.clientX; my=e.clientY; });
+
+  document.querySelectorAll('a,button,.skill-card,.spotlight').forEach(function(el) {
+    el.addEventListener('mouseenter', function() { cur.style.width='16px'; cur.style.height='16px'; curR.style.width='48px'; curR.style.height='48px'; });
+    el.addEventListener('mouseleave', function() { cur.style.width='10px'; cur.style.height='10px'; curR.style.width='34px'; curR.style.height='34px'; });
+  });
+
+  function loopCursor() {
+    cur.style.transform  = 'translate(' + (mx - 5) + 'px,' + (my - 5) + 'px)';
+    rx += (mx - rx) * 0.1;
+    ry += (my - ry) * 0.1;
+    curR.style.transform = 'translate(' + (rx - 17) + 'px,' + (ry - 17) + 'px)';
+    requestAnimationFrame(loopCursor);
+  }
+  loopCursor();
+
+  /* ══════════════════════════════
+     CARD SPOTLIGHT
+  ══════════════════════════════ */
+  document.querySelectorAll('.skill-card').forEach(function(c) {
+    c.addEventListener('mousemove', function(e) {
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      c.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
+    });
+  });
+
+  /* ══════════════════════════════
+     HERO BACKGROUND — Creative aurora/lava-lamp canvas
+  ══════════════════════════════ */
+  var bgCanvas = document.getElementById('bgCanvas');
+  var bgCtx    = bgCanvas.getContext('2d');
+
+  function resizeBG() {
+    bgCanvas.width  = bgCanvas.offsetWidth;
+    bgCanvas.height = bgCanvas.offsetHeight;
+  }
+  resizeBG();
+  window.addEventListener('resize', resizeBG);
+
+  // Metaball blobs
+  var blobs = [];
+  for (var i = 0; i < 7; i++) {
+    blobs.push({
+      x:  Math.random() * bgCanvas.width,
+      y:  Math.random() * bgCanvas.height,
+      vx: (Math.random() - 0.5) * 0.55,
+      vy: (Math.random() - 0.5) * 0.55,
+      r:  Math.random() * 200 + 120,
+      hue: 14 + Math.random() * 28,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+
+  // Star field
+  var stars = [];
+  for (var s = 0; s < 180; s++) {
+    stars.push({
+      x:   Math.random() * 1920,
+      y:   Math.random() * 1080,
+      r:   Math.random() * 1.2 + 0.2,
+      op:  Math.random() * 0.6 + 0.1,
+      spd: Math.random() * 0.003 + 0.001
+    });
+  }
+
+  function drawBG(t) {
+    var w = bgCanvas.width, h = bgCanvas.height;
+    bgCtx.clearRect(0, 0, w, h);
+
+    // Deep space base
+    var sky = bgCtx.createLinearGradient(0, 0, w, h);
+    sky.addColorStop(0,   'hsl(20,40%,3%)');
+    sky.addColorStop(0.5, 'hsl(25,35%,4%)');
+    sky.addColorStop(1,   'hsl(15,45%,3%)');
+    bgCtx.fillStyle = sky;
+    bgCtx.fillRect(0, 0, w, h);
+
+    // Animated aurora streaks
+    for (var a = 0; a < 4; a++) {
+      var aX  = w * (0.15 + a * 0.22 + Math.sin(t * 0.0004 + a * 1.3) * 0.12);
+      var aY  = h * 0.25 + Math.sin(t * 0.0005 + a * 0.8) * h * 0.08;
+      var aW  = w * (0.35 + Math.sin(t * 0.0003 + a) * 0.08);
+      var aH  = h * (0.55 + Math.cos(t * 0.0004 + a * 1.1) * 0.12);
+      var hue = 14 + a * 8 + Math.sin(t * 0.0006 + a) * 10;
+      var aGrad = bgCtx.createRadialGradient(aX, aY, 0, aX, aY + aH * 0.3, aH);
+      aGrad.addColorStop(0,   'hsla(' + hue + ',88%,52%,0.1)');
+      aGrad.addColorStop(0.4, 'hsla(' + hue + ',80%,40%,0.06)');
+      aGrad.addColorStop(1,   'hsla(' + hue + ',70%,30%,0)');
+      bgCtx.fillStyle = aGrad;
+      bgCtx.fillRect(0, 0, w, h);
+    }
+
+    // Metaballs (lava lamp blobs)
+    blobs.forEach(function(b) {
+      b.phase += 0.008;
+      b.x += b.vx + Math.sin(b.phase * 0.7) * 0.18;
+      b.y += b.vy + Math.cos(b.phase * 0.5) * 0.14;
+      if (b.x < -b.r) b.x = w + b.r;
+      if (b.x > w + b.r) b.x = -b.r;
+      if (b.y < -b.r) b.y = h + b.r;
+      if (b.y > h + b.r) b.y = -b.r;
+
+      var pulse = 1 + Math.sin(b.phase) * 0.12;
+      var gr = bgCtx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r * pulse);
+      gr.addColorStop(0,   'hsla(' + b.hue + ',90%,58%,0.22)');
+      gr.addColorStop(0.45,'hsla(' + b.hue + ',80%,45%,0.1)');
+      gr.addColorStop(1,   'hsla(' + b.hue + ',70%,35%,0)');
+      bgCtx.fillStyle = gr;
+      bgCtx.fillRect(0, 0, w, h);
+    });
+
+    // Twinkling stars
+    stars.forEach(function(st) {
+      st.op += Math.sin(t * st.spd) * 0.003;
+      st.op = Math.max(0.05, Math.min(0.8, st.op));
+      var sx = st.x % w, sy = st.y % h;
+      bgCtx.beginPath();
+      bgCtx.arc(sx, sy, st.r, 0, Math.PI * 2);
+      bgCtx.fillStyle = 'rgba(255,200,140,' + st.op + ')';
+      bgCtx.fill();
+    });
+
+    // Scan line shimmer
+    bgCtx.fillStyle = 'rgba(0,0,0,0.025)';
+    for (var y = 0; y < h; y += 5) {
+      bgCtx.fillRect(0, y, w, 1);
+    }
+
+    // Vignette
+    var vig = bgCtx.createRadialGradient(w/2, h/2, h*0.3, w/2, h/2, h*0.9);
+    vig.addColorStop(0,   'rgba(0,0,0,0)');
+    vig.addColorStop(1,   'rgba(0,0,0,0.65)');
+    bgCtx.fillStyle = vig;
+    bgCtx.fillRect(0, 0, w, h);
+  }
+
+  /* ══════════════════════════════
+     SCROLL SHOWCASE CANVAS
+  ══════════════════════════════ */
+  var mc   = document.getElementById('morphCanvas');
+  var mctx = mc.getContext('2d');
+
+  var scenes = [
+    { label:'Skill 01 — Communication', title:'Speak with <em>clarity and confidence</em>', hue:22,  shape:'circle'   },
+    { label:'Skill 02 — Coding',        title:'Build anything <em>you imagine</em>',         hue:36,  shape:'triangle' },
+    { label:'Skill 03 — Creativity',    title:'Ideas that <em>move the world</em>',           hue:14,  shape:'hex'      },
+    { label:'Skill 04 — Leadership',    title:'Lead with <em>purpose and vision</em>',        hue:28,  shape:'star'     },
+  ];
+
+  function resizeMC() {
+    mc.width  = window.innerWidth;
+    mc.height = window.innerHeight;
+  }
+  resizeMC();
+  window.addEventListener('resize', resizeMC);
+
+  function drawScene(t, si) {
+    var w = mc.width, h = mc.height;
+    mctx.clearRect(0, 0, w, h);
+    var s = scenes[si], cx = w / 2, cy = h / 2, hue = s.hue;
+
+    // Dark space bg with nebula color
+    var base = mctx.createLinearGradient(0, 0, w, h);
+    base.addColorStop(0,   'hsl(20,40%,3%)');
+    base.addColorStop(1,   'hsl(' + hue + ',30%,4%)');
+    mctx.fillStyle = base;
+    mctx.fillRect(0, 0, w, h);
+
+    // Nebula clouds (layered radial gradients)
+    var nX = cx + Math.sin(t * 0.0004) * w * 0.1;
+    var nY = cy + Math.cos(t * 0.0003) * h * 0.08;
+    for (var n = 0; n < 3; n++) {
+      var nR = w * (0.55 - n * 0.08);
+      var nG = mctx.createRadialGradient(
+        nX + Math.cos(n * 2.1) * 60, nY + Math.sin(n * 1.7) * 40, 0,
+        nX, nY, nR
+      );
+      nG.addColorStop(0,   'hsla(' + (hue + n * 12) + ',85%,22%,' + (0.14 - n * 0.03) + ')');
+      nG.addColorStop(0.5, 'hsla(' + (hue + n * 8)  + ',70%,15%,' + (0.07 - n * 0.01) + ')');
+      nG.addColorStop(1,   'hsla(' + hue + ',50%,8%,0)');
+      mctx.fillStyle = nG;
+      mctx.fillRect(0, 0, w, h);
+    }
+
+    // Distant stars in morph canvas
+    mctx.save();
+    for (var ds = 0; ds < 80; ds++) {
+      var sx = ((ds * 137.5 + t * 0.01) % w);
+      var sy = ((ds * 97.3) % h);
+      var so = 0.1 + Math.sin(t * 0.002 + ds) * 0.08;
+      mctx.beginPath();
+      mctx.arc(sx, sy, 0.7, 0, Math.PI * 2);
+      mctx.fillStyle = 'rgba(255,200,140,' + Math.max(0.05, so) + ')';
+      mctx.fill();
+    }
+    mctx.restore();
+
+    // Central shape
+    mctx.save();
+    mctx.translate(cx, cy);
+    mctx.rotate(t * 0.0006 + si * Math.PI / 4);
+    var sz = 155 + Math.sin(t * 0.0016) * 14;
+
+    if (s.shape === 'circle') {
+      // Multi-ring circles
+      for (var ci = 4; ci > 0; ci--) {
+        var cg = mctx.createRadialGradient(0, 0, 0, 0, 0, sz * ci / 4);
+        cg.addColorStop(0, 'hsla(' + (hue+6) + ',90%,65%,' + (0.14 / ci) + ')');
+        cg.addColorStop(1, 'transparent');
+        mctx.beginPath();
+        mctx.arc(0, 0, sz * ci / 4, 0, Math.PI * 2);
+        mctx.fillStyle = cg;
+        mctx.fill();
+      }
+      mctx.beginPath();
+      mctx.arc(0, 0, sz * 0.78, 0, Math.PI * 2);
+      mctx.strokeStyle = 'hsla(' + hue + ',80%,65%,0.45)';
+      mctx.lineWidth = 1.4;
+      mctx.stroke();
+      // Inner bright dot
+      var idg = mctx.createRadialGradient(0,0,0,0,0,sz*0.18);
+      idg.addColorStop(0,'hsla('+hue+',100%,80%,0.5)');
+      idg.addColorStop(1,'transparent');
+      mctx.beginPath(); mctx.arc(0,0,sz*0.18,0,Math.PI*2); mctx.fillStyle=idg; mctx.fill();
+
+    } else if (s.shape === 'triangle') {
+      for (var ti = 0; ti < 3; ti++) {
+        mctx.beginPath();
+        for (var tp = 0; tp <= 3; tp++) {
+          var ta  = tp / 3 * Math.PI * 2 - Math.PI / 2;
+          var trd = sz * (0.36 + ti * 0.22);
+          if (tp === 0) mctx.moveTo(Math.cos(ta)*trd, Math.sin(ta)*trd);
+          else          mctx.lineTo(Math.cos(ta)*trd, Math.sin(ta)*trd);
+        }
+        mctx.strokeStyle = 'hsla(' + (hue + ti*10) + ',85%,65%,' + (0.38 - ti*0.09) + ')';
+        mctx.lineWidth = 1.4; mctx.stroke();
+      }
+      var tfg = mctx.createRadialGradient(0,-sz*0.28,0,0,0,sz*0.68);
+      tfg.addColorStop(0,'hsla('+hue+',88%,62%,0.12)'); tfg.addColorStop(1,'transparent');
+      mctx.fillStyle = tfg; mctx.fill();
+
+    } else if (s.shape === 'hex') {
+      for (var hi = 0; hi < 4; hi++) {
+        mctx.beginPath();
+        for (var hp = 0; hp <= 6; hp++) {
+          var ha  = hp / 6 * Math.PI * 2 + hi * 0.16;
+          var hrd = sz * (0.22 + hi * 0.2);
+          if (hp === 0) mctx.moveTo(Math.cos(ha)*hrd, Math.sin(ha)*hrd);
+          else          mctx.lineTo(Math.cos(ha)*hrd, Math.sin(ha)*hrd);
+        }
+        mctx.strokeStyle = 'hsla(' + hue + ',78%,65%,' + (0.32 - hi*0.055) + ')';
+        mctx.lineWidth = hi === 0 ? 1.8 : 1; mctx.stroke();
+      }
+      var hfg = mctx.createRadialGradient(0,0,0,0,0,sz*0.35);
+      hfg.addColorStop(0,'hsla('+hue+',85%,60%,0.16)'); hfg.addColorStop(1,'transparent');
+      mctx.beginPath();
+      for (var hf=0;hf<=6;hf++){var hfa=hf/6*Math.PI*2;if(hf===0)mctx.moveTo(Math.cos(hfa)*sz*0.22,Math.sin(hfa)*sz*0.22);else mctx.lineTo(Math.cos(hfa)*sz*0.22,Math.sin(hfa)*sz*0.22);}
+      mctx.fillStyle=hfg; mctx.fill();
+
+    } else { // star
+      mctx.beginPath();
+      for (var sti = 0; sti < 10; sti++) {
+        var sta = sti / 10 * Math.PI * 2 - Math.PI / 2;
+        var str = sti % 2 === 0 ? sz * 0.86 : sz * 0.38;
+        if (sti === 0) mctx.moveTo(Math.cos(sta)*str, Math.sin(sta)*str);
+        else            mctx.lineTo(Math.cos(sta)*str, Math.sin(sta)*str);
+      }
+      mctx.closePath();
+      var stg = mctx.createRadialGradient(0,0,0,0,0,sz);
+      stg.addColorStop(0,'hsla('+hue+',90%,65%,0.18)'); stg.addColorStop(1,'transparent');
+      mctx.fillStyle = stg; mctx.fill();
+      mctx.strokeStyle = 'hsla(' + hue + ',80%,65%,0.52)';
+      mctx.lineWidth = 1.4; mctx.stroke();
+    }
+
+    // Orbiting particles
+    for (var op = 0; op < 8; op++) {
+      var oa = op / 8 * Math.PI * 2 + t * 0.0009;
+      var or = sz * (1.15 + Math.sin(t * 0.0012 + op) * 0.06);
+      var ox = Math.cos(oa) * or, oy = Math.sin(oa) * or;
+      // Particle glow
+      var opg = mctx.createRadialGradient(ox,oy,0,ox,oy,5);
+      opg.addColorStop(0,'hsla('+(hue+20)+',95%,75%,0.8)'); opg.addColorStop(1,'transparent');
+      mctx.beginPath(); mctx.arc(ox,oy,4,0,Math.PI*2); mctx.fillStyle=opg; mctx.fill();
+    }
+
+    // Counter-rotating ring
+    mctx.rotate(-t * 0.0012);
+    mctx.beginPath();
+    mctx.arc(0, 0, sz * 1.3, 0, Math.PI * 1.6);
+    mctx.strokeStyle = 'hsla(' + hue + ',70%,60%,0.18)';
+    mctx.lineWidth = 1; mctx.stroke();
+
+    mctx.restore();
+
+    // Edge vignette
+    var vig = mctx.createRadialGradient(cx,cy,h*0.2,cx,cy,h*0.8);
+    vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.6)');
+    mctx.fillStyle = vig; mctx.fillRect(0,0,w,h);
+  }
+
+  /* ══════════════════════════════
+     MAIN ANIMATION LOOP
+  ══════════════════════════════ */
+  var lastSILabel = '';
+
+  function mainLoop(t) {
+    requestAnimationFrame(mainLoop);
+
+    // Hero background
+    drawBG(t);
+
+    // Showcase
+    var showcaseEl = document.getElementById('showcase');
+    if (showcaseEl) {
+      var rect   = showcaseEl.getBoundingClientRect();
+      var total  = showcaseEl.offsetHeight - window.innerHeight;
+      var prog   = total > 0 ? Math.max(0, Math.min(1, -rect.top / total)) : 0;
+      var si     = Math.min(Math.floor(prog * scenes.length), scenes.length - 1);
+
+      drawScene(t, si);
+
+      var sc = scenes[si];
+      var lblEl = document.getElementById('scLabel');
+      var ttlEl = document.getElementById('scTitle');
+      if (lblEl && ttlEl && lblEl.textContent !== sc.label) {
+        lblEl.style.opacity = '0';
+        ttlEl.style.opacity = '0';
+        ttlEl.style.transform = 'translateY(14px)';
+        setTimeout(function(lbl, ttl, scene) {
+          return function() {
+            lbl.textContent = scene.label;
+            ttl.innerHTML   = scene.title;
+            lbl.style.opacity = '1';
+            ttl.style.opacity = '1';
+            ttl.style.transform = 'none';
+          };
+        }(lblEl, ttlEl, sc), 260);
+      }
+    }
+  }
+  requestAnimationFrame(mainLoop);
+
+  /* ══════════════════════════════
+     MANIFESTO WORD REVEAL
+  ══════════════════════════════ */
+  var mf = document.getElementById('mfText');
+  if (mf) {
+    var raw = mf.innerHTML;
+    // Protect <span> tags
+    var parts = raw.replace(/(<span[^>]*>.*?<\/span>)/g, function(m) { return '|||' + m + '|||'; });
+    var words = parts.split(/\s+/);
+    mf.innerHTML = words.map(function(w) {
+      if (w.startsWith('|||')) return w.replace(/\|\|\|/g, '');
+      if (!w) return '';
+      return '<span class="w">' + w + '</span> ';
+    }).join('');
+
+    function tickMF() {
+      mf.querySelectorAll('.w').forEach(function(w) {
+        var top = w.getBoundingClientRect().top;
+        if (top < window.innerHeight * 0.74) w.classList.add('lit');
+        else w.classList.remove('lit');
+      });
+    }
+    window.addEventListener('scroll', tickMF);
+    tickMF();
+  }
+
+  /* ══════════════════════════════
+     INTERSECTION OBSERVER — reveal + counter
+  ══════════════════════════════ */
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('visible');
+
+      var sn = e.target.querySelector('.stat-n');
+      if (sn) {
+        var tgt = parseFloat(sn.dataset.target);
+        var sfx = sn.dataset.sfx || '';
+        var cur2 = 0;
+        var step = tgt / 55;
+        var tm = setInterval(function() {
+          cur2 = Math.min(cur2 + step, tgt);
+          sn.textContent = Math.floor(cur2) + sfx;
+          if (cur2 >= tgt) clearInterval(tm);
+        }, 20);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal, .astep, .stat').forEach(function(el) {
+    io.observe(el);
+  });
+
+}); // end DOMContentLoaded
+</script>
+</body>
+</html>
